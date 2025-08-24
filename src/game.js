@@ -1,5 +1,4 @@
 import Matter from "matter-js";
-import { createPlayer, createWeapon, createCharacter } from "./players.js";
 import { rotateWeapon, weapon1State, weapon2State } from "./weapons.js";
 import { handleHit, handleSwordClash } from "./collisions.js";
 import { randomJump, limitVelocity } from "./effects.js";
@@ -8,7 +7,9 @@ import { state } from "./state.js";
 import { setWeaponSprites } from "./render.js";
 import { setPlayerSkins } from "./render.js";
 import {drawEndButtons} from "./index.js";
-
+import { createPlayer, createWeapon, createCharacter, shootArrow } from "./players.js";
+import { shootArrowOnce } from "./players.js";
+import { playClash, playHit, playShot } from "./audio.js";
 
 
 const { Engine, World, Bodies, Body } = Matter;
@@ -45,9 +46,9 @@ export function setPlayers(name1, name2) {
 
 let hited = 0;
  
-export let thiefsword, knightsword, magic;
-export let thief1, knight1, mage1;
-export let thief2, knight2, mage2;
+export let thiefsword, knightsword, magic, bow, arrow;
+export let thief1, knight1, mage1, archer1;
+export let thief2, knight2, mage2, archer2;
 
 let bgImg;
 export let startbg;
@@ -61,10 +62,14 @@ export function preload(p) {
   thief2 = p.loadImage('/thief2.png');
   knight2 = p.loadImage('/knight2.png');
   mage2 = p.loadImage('/mage2.png');
+  archer1 = p.loadImage('/archer1.png');
+  archer2 = p.loadImage('/archer2.png');
 
   thiefsword = p.loadImage('/sword1.png');
   knightsword = p.loadImage('/sword2.png');
   magic = p.loadImage('/magic.png');
+  bow = p.loadImage('/bow.png');
+  arrow = p.loadImage('/arrow.png');
 
   bgImg = p.loadImage("/background.png");
   startbg = p.loadImage("/startbg.png");
@@ -80,9 +85,9 @@ export function setup(p) {
     p.noSmooth();
 
   engine = Engine.create();
-  engine.positionIterations = 10;
-  engine.velocityIterations = 10;
-  engine.constraintIterations = 20;
+  engine.positionIterations = 100;
+  engine.velocityIterations = 100;
+  engine.constraintIterations = 100;
 
   world = engine.world;
   engine.world.gravity.y = 1;
@@ -115,6 +120,49 @@ export function draw(p, player1Stat, player2Stat) {
   else   p.text(player2.name + " wins!", p.width / 2, p.height / 2);
   }
 
+if (weapon1.type === "bow" && !state.gameOver) {
+  if (weapon1.remainingArrows > 0) 
+    if (weapon1.shootTimer <= 0) {
+      shootArrowOnce(player1, weapon1);
+      weapon1.remainingArrows--;
+      weapon1.shootTimer = weapon1.shootInterval;
+    } else {
+      weapon1.shootTimer--;
+    } else if (p.frameCount % 60 === 0) { // каждые 60 кадров "заряжаем" новый выстрел
+    weapon1.remainingArrows = weapon1.arrowsPerShot;
+  }
+}
+
+if (weapon2.type === "bow" && !state.gameOver ) {
+  if (weapon2.remainingArrows > 0) {
+    if (weapon2.shootTimer <= 0) {
+      shootArrowOnce(player1, weapon2);
+      weapon2.remainingArrows--;
+      weapon2.shootTimer = weapon2.shootInterval;
+    } else {
+      weapon2.shootTimer--;
+    }
+  } else if (p.frameCount % 60 === 0) { // каждые 60 кадров "заряжаем" новый выстрел
+    weapon2.remainingArrows = weapon2.arrowsPerShot;
+  }
+}
+
+weapon1.arrows = weapon1.arrows.filter(a =>
+  a.x > -50 && a.x < p.width + 50 &&
+  a.y > -50 && a.y < p.height + 50
+);
+
+weapon2.arrows = weapon2.arrows.filter(a =>
+  a.x > -50 && a.x < p.width + 50 &&
+  a.y > -50 && a.y < p.height + 50
+);
+
+
+if (weapon1.type === "bow") updateAndDrawArrows(p, weapon1, player2, weapon2);
+if (weapon2.type === "bow") updateAndDrawArrows(p, weapon2, player1, weapon1);
+
+
+
   // вращение оружия
   rotateWeapon(player1, weapon1, weapon1.spinSpeed, direction1, weapon1State);
   rotateWeapon(player2, weapon2, weapon2.spinSpeed, direction2, weapon2State);
@@ -139,11 +187,13 @@ export function draw(p, player1Stat, player2Stat) {
   if(player1.name === "Knight") player1Stat.textContent = weapon1.damage.toFixed(3);
   else if(player1.name === "Thief") player1Stat.textContent = weapon1.spinSpeed.toFixed(3);
   else if(player1.name === "Mage") player1Stat.textContent = weapon1.damage.toFixed(3);
+  else if(player1.name === "Archer")  player1Stat.textContent = weapon1.arrowsPerShot;
 
   
   if(player2.name === "Knight") player2Stat.textContent = weapon2.damage.toFixed(3);
   else if(player2.name === "Thief") player2Stat.textContent = weapon2.spinSpeed.toFixed(3);
   else if(player2.name === "Mage") player2Stat.textContent = weapon2.damage.toFixed(3);
+  else if(player2.name === "Archer")  player2Stat.textContent = weapon2.arrowsPerShot;
 
 
   // ограничение скорости
@@ -172,18 +222,75 @@ export function draw(p, player1Stat, player2Stat) {
   randomJump(player1);
   randomJump(player2);
 
+  function updateAndDrawArrows(p, weapon, opponent, opponentWeapon) {
+  for (let i = weapon.arrows.length - 1; i >= 0; i--) {
+    const a = weapon.arrows[i];
+
+    // движение по прямой
+    a.x += Math.cos(a.angle) * a.speed;
+    a.y += Math.sin(a.angle) * a.speed;
+
+    // рисуем стрелу
+    p.push();
+    p.translate(a.x, a.y);
+    p.rotate(a.angle);
+    p.imageMode(p.CENTER);
+    p.image(arrow, 0, 0, a.width*3, a.height*7); // если нет width/height, ставим дефолт
+    p.pop();
+
+    // удаляем стрелу если вне экрана
+    if (a.x < -50 || a.x > p.width + 50 || a.y < -50 || a.y > p.height + 50) {
+      weapon.arrows.splice(i, 1);
+      continue;
+    }
+
+    // проверка попаданий по игроку
+const dx = a.x - opponent.position.x;
+const dy = a.y - opponent.position.y;
+const dist = Math.sqrt(dx*dx + dy*dy);
+if (dist < opponent.circleRadius + a.hitRadius) {
+    state[`hp${opponent === player1 ? 1 : 2}`] = Math.max(0, state[`hp${opponent === player1 ? 1 : 2}`] - 1);
+    opponent.hitFlash = 15;
+    weapon.arrowsPerShot+=1;
+    if (state[`hp${opponent === player1 ? 1 : 2}`] === 0) {
+        state.winner = opponent === player1 ? 2 : 1;
+        state.gameOver = true;
+      }
+    playHit();
+    weapon.arrows.splice(i, 1);
+    continue;
+}
+
+    // проверка парирования по оружию
+    const wx = opponentWeapon.position.x;
+    const wy = opponentWeapon.position.y;
+    const wdx = a.x - wx;
+    const wdy = a.y - wy;
+    const wdist = Math.sqrt(wdx*wdx + wdy*wdy);
+if (wdist < Math.max(opponentWeapon.renderW, opponentWeapon.renderH)/2 + a.hitRadius) {
+    opponentWeapon.clashFlash = 255;
+    weapon.arrows.splice(i, 1);
+    playClash();
+    continue;
+}
+
+  }
+}
+
+
+
   // удары
   handleHit( p1 ,player1, player2, weapon1, {
     setWinner: (w) => state.winner = w,
     setHP: () => {
-      // логика урона
-      if(player2.name === "Knight")
+      if(player2.name === "Knight" && player1.name === "Thief")
         state.hp2 = Math.max(0, state.hp2 - weapon1.damage + 1);
       else
         state.hp2 = Math.max(0, state.hp2 - weapon1.damage);
       if(player1.name === "Knight") weapon1.damage +=0.5;
       else if(player1.name === "Thief") weapon1.spinSpeed +=0.2;
       else if(player1.name === "Mage") {coef1+=1.2; weapon1.damage = 1}
+      //else if (player1.name === "Archer") {weapon1.arrowsPerShot += 1;}
       if (state.hp2 === 0) {
         state.winner = 1;
         state.gameOver = true;
@@ -194,13 +301,15 @@ export function draw(p, player1Stat, player2Stat) {
   handleHit( p2 ,player2, player1, weapon2, {
     setWinner: (w) => state.winner = w,
     setHP: () => {
-      if(player1.name === "Knight")
+      if(player2.name === "Thief" && player1.name === "Knight")
         state.hp1 = Math.max(0, state.hp1 - weapon2.damage + 1);
       else
         state.hp1 = Math.max(0, state.hp1 - weapon2.damage);
       if(player2.name === "Knight") weapon2.damage +=0.5;
       else if(player2.name === "Thief") weapon2.spinSpeed +=0.2;
-        else if(player2.name === "Mage")  {coef2+=1.2; weapon2.damage = 1}
+      else if(player2.name === "Mage")  {coef2+=1.2; weapon2.damage = 1}
+     // else if (player2.name === "Archer") {weapon2.arrowsPerShot += 1;}
+
       if (state.hp1 === 0) {
         state.winner = 2;
         state.gameOver = true;
@@ -285,10 +394,12 @@ export function initPlayers(p) {
   if(player1.name === "Knight") document.getElementById("special1").textContent = "Damage:";
   else if(player1.name === "Thief") document.getElementById("special1").textContent = "Spin speed:";
   else if(player1.name === "Mage") document.getElementById("special1").textContent = "Charge/sec:";
+  else if(player1.name === "Archer") document.getElementById("special1").textContent = "Arrows:";
 
   if(player2.name === "Knight") document.getElementById("special2").textContent = "Damage:";
   else if(player2.name === "Thief") document.getElementById("special2").textContent = "Spin speed:";
   else if(player2.name === "Mage") document.getElementById("special2").textContent = "Charge/sec:";
+  else if(player2.name === "Archer") document.getElementById("special2").textContent = "Arrows:";
 
   World.add(world, [player1, player2, weapon1, weapon2]);
 }

@@ -3,6 +3,8 @@ let sword2Sprite = null;
 let player1Skin = null;
 let player2Skin = null;
 
+import { arrow } from "./game";
+
 export function setWeaponSprites(img1, img2) {
   sword1Sprite = img1;
   sword2Sprite = img2;
@@ -26,7 +28,6 @@ export function drawBody(p, body, col, hp, playerIndex = 1) {
 
   if (skin) {
     p.noTint();
-    
     p.image(skin, 0, 0, r * 2.2, r * 3.2);
   
   } else {
@@ -100,6 +101,9 @@ export function drawWeapon(p, body, col, playerIndex) {
         p.fill(255, 255, 0, 50);
         p.ellipse(0, 0, orbRadius * 4); 
         p.pop();
+    } if(body.name === "Archer"){
+          p.imageMode(p.CENTER);
+          p.image(sprite, -10, 0, body.renderW*1.6, body.renderH*1.6); 
     }
 
     // --- жёлтая вспышка при clash

@@ -82,7 +82,7 @@ let endButtons = {
 let selectedPlayer1 = "Thief";
 let selectedPlayer2 = "Thief";
 
-const characters = ["Thief", "Knight", "Mage"];
+const characters = ["Thief", "Knight", "Mage", "Archer"];
 
 
 function drawStartScreen(p) {

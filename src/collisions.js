@@ -20,14 +20,20 @@ export function handleHit(player, attacker, target, weapon, vars) {
   if (target.invul > 0 || state.gameOver) return;
   let col = SAT.collides(weapon, target);
   if (col && col.collided) {
-    playHit();
+      if(attacker.name !== 'Archer' ) playHit();
     knockback(target, attacker, 8);
     if(attacker.name === 'Thief' ){
           target.invul = 10;
     } else {
     target.invul = 50;
   }
-    target.hitFlash = 15;
+
+  if(attacker.name === 'Archer' ){
+             target.hitFlash = 0;
+    } else {
+         target.hitFlash = 15;
+    }
+ 
     setHP(attacker, target);
     target.flashStrength = 255;     // максимальная яркость
     target.flashType = "hit";       // или "clash"

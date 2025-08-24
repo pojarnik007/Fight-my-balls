@@ -1,5 +1,5 @@
 import Matter from "matter-js";
-import {knightsword, thiefsword, magic, thief1, knight1, mage1, thief2, mage2, knight2, archer1,archer2,bow,arrow } from "./game";
+import {knightsword, thiefsword, magic, thief1, knight1, mage1, thief2, mage2, knight2, archer1,archer2,bow,arrow, spear, spearman2, spearman1 } from "./game";
 import { playShot } from "./audio";
 const { Bodies, Body, World } = Matter;
 
@@ -51,6 +51,9 @@ export function createCharacter(type, x, y, playerNum) {
         case "Archer":
           skin = archer1;
           break;
+        case "Spearman":
+          skin = spearman1;
+          break;
   }
   else
     switch(type){
@@ -65,6 +68,9 @@ export function createCharacter(type, x, y, playerNum) {
           break;
         case "Archer":
           skin = archer2;
+          break;
+        case "Spearman":
+          skin = spearman2;
           break;
   }
 
@@ -101,9 +107,15 @@ export function createCharacter(type, x, y, playerNum) {
       weapon.type = "bow";
       weapon.arrowsPerShot = 1;
       weapon.shootTimer = 0;
-      weapon.shootInterval = 1; // кадров между стрелами
+      weapon.shootInterval = 1;
       weapon.remainingArrows = weapon.arrowsPerShot;
+      break;
 
+      case "Spearman":
+      player = createPlayer(x, y, 45, skin, "Spearman");
+      weapon = createWeapon(player, 100, 30, spear, "Spearman", 'sword');
+      weapon.damage = 1;
+      weapon.spinSpeed = 2;
       break;
 
 
@@ -130,3 +142,17 @@ export function shootArrowOnce(player, weapon) {
 });
 
 }
+
+export function growSpear(weapon, increment = 2) {
+  const oldW = weapon.renderW;
+  const newW = oldW + increment;
+
+  const scaleX = newW / oldW;
+
+  Body.scale(weapon, scaleX, 1);
+
+  weapon.renderW = newW;
+  // если центр совпадает с игроком – орбита не нужна
+  weapon.orbitRadius = newW/2 + 45;
+}
+

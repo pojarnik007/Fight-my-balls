@@ -2,8 +2,9 @@ import Matter from "matter-js";
 import { hp1, hp2, gameOver, winner } from "./state.js";
 import {state} from "./state.js";
 import { playClash, playHit } from "./audio.js";
+import { growSpear } from "./players.js";
 
-const { SAT, Body } = Matter;
+const { SAT, Body, World, Engine } = Matter;
 
 export function knockback(body, from, force) {
   let dx = body.position.x - from.position.x;
@@ -20,16 +21,23 @@ export function handleHit(player, attacker, target, weapon, vars) {
   if (target.invul > 0 || state.gameOver) return;
   let col = SAT.collides(weapon, target);
   if (col && col.collided) {
-      if(attacker.name !== 'Archer' ) playHit();
-    knockback(target, attacker, 8);
+    
     if(attacker.name === 'Thief' ){
           target.invul = 10;
     } else {
-    target.invul = 50;
+    target.invul = 20;
   }
 
+  if(attacker.name !== 'Archer' ) {playHit();}
+  if (weapon.name === "Spearman") {
+  growSpear(weapon, 5);
+  target.invul = 7;
+  }
+
+
   if(attacker.name === 'Archer' ){
-             target.hitFlash = 0;
+         target.hitFlash = 0;
+          target.invul = 0;
     } else {
          target.hitFlash = 15;
     }
@@ -44,10 +52,10 @@ export function handleSwordClash(weapon1, weapon2, player1, player2, vars) {
   const { clashCD, setClash } = vars;
   if (clashCD > 0 || state.gameOver) return;
   const clash = SAT.collides(weapon1, weapon2);
-  if (clash && clash.collided) {
+  if (clash && clash.collided && player1.name !=="Archer" && player2.name !=="Archer" ) {
     playClash();
-    knockback(player1, player2, 6);
-    knockback(player2, player1, 6);
+    //knockback(player1, player2, 6);
+    //knockback(player2, player1, 6);
     setClash(); 
     weapon1.clashFlash = 255;
     weapon2.clashFlash = 255;

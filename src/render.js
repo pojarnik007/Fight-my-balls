@@ -28,7 +28,7 @@ export function drawBody(p, body, col, hp, playerIndex = 1) {
 
   if (skin) {
     p.noTint();
-    p.image(skin, 0, 0, r * 2.2, r * 3.2);
+    p.image(skin, 0, 0, r * 2, r * 3.3);
   
   } else {
     p.fill(col);
@@ -104,7 +104,9 @@ export function drawWeapon(p, body, col, playerIndex) {
     } if(body.name === "Archer"){
           p.imageMode(p.CENTER);
           p.image(sprite, -10, 0, body.renderW*1.6, body.renderH*1.6); 
-    }
+    } if(body.name === "Spearman"){
+        p.image(sprite, -5, 0, body.renderW*1.2, body.renderH);
+    } 
 
     // --- жёлтая вспышка при clash
     if (body.clashFlash > 0) {

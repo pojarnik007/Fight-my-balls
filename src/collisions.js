@@ -2,7 +2,9 @@ import Matter from "matter-js";
 import { hp1, hp2, gameOver, winner } from "./state.js";
 import {state} from "./state.js";
 import { playClash, playHit } from "./audio.js";
-import { growSpear } from "./players.js";
+import { growSpear, handleShieldCollision, handleShieldHit } from "./players.js";
+import { addCut } from "./render.js";
+import { KatanaCutImg } from "./game.js";
 
 const { SAT, Body, World, Engine } = Matter;
 
@@ -16,7 +18,9 @@ export function knockback(body, from, force) {
   Body.setVelocity(body, { x: dx * force, y: dy * force });
 }
 
-export function handleHit(player, attacker, target, weapon, vars) {
+export function handleHit(player, attacker, target, weapon , targetWeapon, targetIndex, attackerIndex , vars) {
+  if (state.gameOver) return;
+
   const { setWinner, setHP } = vars;
   if (target.invul > 0 || state.gameOver) return;
   let col = SAT.collides(weapon, target);
@@ -28,23 +32,69 @@ export function handleHit(player, attacker, target, weapon, vars) {
     target.invul = 20;
   }
 
-  if(attacker.name !== 'Archer' ) {playHit();}
+  if(attacker.name !== 'Archer' && attacker.name !== 'Shielder' ) {playHit();}
   if (weapon.name === "Spearman") {
   growSpear(weapon, 5);
   target.invul = 7;
   }
 
-
-  if(attacker.name === 'Archer' ){
+  if(attacker.name === 'Archer' || attacker.name === "Shielder" ){
          target.hitFlash = 0;
           target.invul = 0;
     } else {
          target.hitFlash = 15;
     }
- 
-    setHP(attacker, target);
-    target.flashStrength = 255;     // максимальная яркость
-    target.flashType = "hit";       // или "clash"
+    if (attacker.name === "Viking") {
+      // урон зависит от скорости
+      let damageDealt = weapon.damage + weapon.spinSpeed * weapon.vikingCoef;
+      state[`hp${targetIndex}`] = Math.max(0, state[`hp${targetIndex}`] - damageDealt);
+
+      // сброс скорости к начальному значению
+      weapon.spinSpeed = weapon.initialSpinSpeed;
+
+      // увеличиваем коэффициент прироста урона
+      weapon.vikingCoef += 0.05; // можно настроить рост
+} else
+if(attacker.name === "Samurai") {
+  weapon.cuts = (weapon.cuts || 0) + 1;
+
+  for (let i = 0; i < weapon.cuts; i++) {
+    setTimeout(() => {
+      // урон
+      const hpKey = targetIndex;
+      if(targetIndex === 1){
+      state.hp1 = Math.max(0, state.hp1-1);
+    
+      if (state.hp1 === 0) {
+        state.winner = attackerIndex;
+        state.gameOver = true;
+      }
+    }
+    else{
+      state.hp2 = Math.max(0, state.hp2-1);
+    
+      if (state.hp2 === 0) {
+        state.winner = attackerIndex;
+        state.gameOver = true;
+      }
+    }
+
+      target.hitFlash = 15;
+      playHit();
+
+      // добавляем визуальный порез
+      addCut(target, KatanaCutImg); // katanaCutImg - загруженный спрайт пореза
+
+    }, i * 150);
+  }
+} else {
+  setHP(attacker, target); // обычный урон для других классов
+}
+
+target.flashStrength = 255;
+target.flashType = "hit";
+
+
   }
 }
 

@@ -37,6 +37,19 @@ export function drawBody(p, body, col, hp, playerIndex = 1) {
     p.ellipse(0, 0, r * 2);
   }
 
+  if (body.cutsSprites) {
+  for (let i = body.cutsSprites.length - 1; i >= 0; i--) {
+    const cut = body.cutsSprites[i];
+    p.push();
+    p.translate(cut.x, cut.y);
+    p.rotate(cut.angle);
+    p.image(cut.img, 0, 0, r*3, r*3); // размер можно менять
+    p.pop();
+    cut.lifetime--;
+    if (cut.lifetime <= 0) body.cutsSprites.splice(i, 1);
+  }
+}
+
   // --- белый флеш (только при уроне)
   if (body.hitFlash > 0) {
     p.push();
@@ -82,9 +95,9 @@ export function drawWeapon(p, body, col, playerIndex) {
     p.noTint();
     if(body.name === "Thief"){
         p.image(sprite, -5, 0, body.renderW, body.renderH);
-    } if(body.name === "Knight"){
+    } else if(body.name === "Knight"){
         p.image(sprite, 0, 0, body.renderW, body.renderH * 2);
-    } if (body.name === "Mage"){
+    } else if (body.name === "Mage"){
         p.image(sprite, 0, 0, body.renderW, body.renderH * 1.5);
                 // --- магический шар на конце меча
         const orbRadius = 5 + body.damage * 1.5; // размер зависит от урона
@@ -101,12 +114,24 @@ export function drawWeapon(p, body, col, playerIndex) {
         p.fill(255, 255, 0, 50);
         p.ellipse(0, 0, orbRadius * 4); 
         p.pop();
-    } if(body.name === "Archer"){
+    } else if(body.name === "Archer"){
           p.imageMode(p.CENTER);
           p.image(sprite, -10, 0, body.renderW*1.6, body.renderH*1.6); 
-    } if(body.name === "Spearman"){
+    } else if(body.name === "Spearman"){
         p.image(sprite, -5, 0, body.renderW*1.2, body.renderH);
-    } 
+    } else  if(body.name === "Samurai"){
+        p.image(sprite, -5, 0, body.renderW*1.2, body.renderH);
+    } else  if(body.name === "Viking"){
+        p.image(sprite, -5, 0, body.renderW*1.2, body.renderH);
+    } else  if(body.name === "Shielder"){
+        p.image(sprite, -5, 0, body.renderW*1.2, body.renderH);
+    } else  if(body.name === "Fighter"){
+        p.image(sprite, -5, 0, body.renderW*1.2, body.renderH);
+    } else if(body.name === "Ninja"){
+        p.image(sprite, -25, 0, body.renderW, body.renderH);
+    }  else {
+       p.image(sprite, -15, 0, body.renderW, body.renderH);
+    }
 
     // --- жёлтая вспышка при clash
     if (body.clashFlash > 0) {
@@ -157,3 +182,14 @@ export function drawHPBar(p, x, y, w, h, hp, col, label) {
 }
 
 
+export function addCut(body, cutImg) {
+  if (!body.cutsSprites) body.cutsSprites = [];
+  const angle = (Math.random() - 0.5) * Math.PI / 2; // случайный наклон ±90°
+  body.cutsSprites.push({
+    x: 0,    // позиция относительно тела
+    y: 0,
+    angle,
+    lifetime: 30, // кадры до исчезновения
+    img: cutImg
+  });
+}

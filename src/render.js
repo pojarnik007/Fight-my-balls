@@ -126,9 +126,9 @@ export function drawWeapon(p, body, col, playerIndex) {
     } else  if(body.name === "Shielder"){
         p.image(sprite, -5, 0, body.renderW*1.2, body.renderH);
     } else  if(body.name === "Fighter"){
-        p.image(sprite, -5, 0, body.renderW*1.2, body.renderH);
+        
     } else if(body.name === "Ninja"){
-        p.image(sprite, -25, 0, body.renderW, body.renderH);
+        p.image(sprite, -25, 0, body.renderW+30, body.renderH+30);
     }  else {
        p.image(sprite, -15, 0, body.renderW, body.renderH);
     }
@@ -139,12 +139,19 @@ export function drawWeapon(p, body, col, playerIndex) {
       p.blendMode(p.ADD);
       p.fill(255, 255, 0, body.clashFlash); // жёлтая подсветка
       p.noStroke();
+      if (body.type === "fight") {
+      // рисуем круг
+      const radius = body.renderW / 2; // можно менять, например body.renderW
+      p.ellipse(0, 0, radius * 2);
+    } else {
+      // обычный прямоугольник для других оружий
       p.rectMode(p.CENTER);
-      p.rect(0, 0, body.renderW * 1, body.renderH * 1, 3); // чуть больше меча
-      p.pop();
-
-      body.clashFlash -= 30; // затухает постепенно
+      p.rect(0, 0, body.renderW * 1, body.renderH * 1, 3);
     }
+
+    p.pop();
+    body.clashFlash -= 30; // затухание
+  }
   } else {
     // fallback — прямоугольник
     p.fill(col);

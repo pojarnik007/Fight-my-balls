@@ -7,7 +7,7 @@ import { state } from "./state.js";
 import { setWeaponSprites } from "./render.js";
 import { setPlayerSkins } from "./render.js";
 import {drawEndButtons} from "./index.js";
-import { createPlayer, createWeapon, createCharacter, shootArrow, handleShieldHit } from "./players.js";
+import { createPlayer, createWeapon, createCharacter, shootArrow, handleShieldHit, Fighter, throwShuriken, updateShurikens } from "./players.js";
 import { shootArrowOnce } from "./players.js";
 import { playClash, playHit, playShot } from "./audio.js";
 import { knockback } from "./collisions.js";
@@ -24,11 +24,15 @@ let direction2 = -1;
 let slashed = 0;
 let clashCD = 0;
 let W2Damage =1;
-let jumpCD1 = 0;
-let jumpCD2 = 0;
+let jumpCD1 = 5;
+let jumpCD2 = 5;
 let p1 = 1;
 let p2 = 2;
 let coef1, coef2;
+// game.js
+let lastHit1 = 0;
+export function getLastHit1() { return lastHit1; }
+export function setLastHit1(val) { lastHit1 = val; }
 
 export let p1name = '';
 export let p2name = '';
@@ -41,8 +45,6 @@ export let startbg;
 export let thiefsword, knightsword, magic, bow, arrow, spear, fillerweapon, filler, axe, pipe, suriken, katana, shield, KatanaCutImg;
 export let thief1, knight1, mage1, archer1, spearman1,samurai1,shielder1,viking1,fighter1,ninja1,piper1;
 export let thief2, knight2, mage2, archer2, spearman2,samurai2,shielder2,viking2,fighter2,ninja2,piper2;
-
-
 
 export function setPlayers(name1, name2) {
   p1name = name1;
@@ -136,6 +138,9 @@ export function draw(p, player1Stat, player2Stat) {
   else   p.text(player2.name + " wins!", p.width / 2, p.height / 2);
   }
 
+state.frame = p.frameCount;
+
+
 if (weapon1.type === "bow" && !state.gameOver) {
   if (weapon1.remainingArrows > 0) 
     if (weapon1.shootTimer <= 0) {
@@ -173,23 +178,33 @@ weapon2.arrows = weapon2.arrows.filter(a =>
   a.y > -50 && a.y < p.height + 50
 );
 
+if (player1.name === "Ninja" || player1.name === "Shielder") {
+    // автоматическая стрельба или по таймеру/кнопке
+    if (p.frameCount % 30 === 0 && player1.name === "Ninja") { // каждые 30 кадров
+        throwShuriken(player1, weapon1);
+    }
+    updateShurikens(p, player1, weapon1, player2, weapon2, 2);
+}
+
+if (player2.name === "Ninja" || player2.name === "Shielder") {
+    if (p.frameCount % 30 === 0 && player2.name === "Ninja") {
+        throwShuriken(player2, weapon2);
+    }
+    updateShurikens(p, player2, weapon2, player1, weapon1, 1);
+}
+
+
 
 if (weapon1.type === "bow") updateAndDrawArrows(p, weapon1, player2, weapon2, 1);
 if (weapon2.type === "bow") updateAndDrawArrows(p, weapon2, player1, weapon1, 2);
 
   // вращение оружия
+if ( player1.stunTimer === 0)
   rotateWeapon(player1, weapon1, weapon1.spinSpeed, direction1, weapon1State);
+else rotateWeapon(player1, weapon1, 0, direction1, weapon1State);
+if ( player2.stunTimer === 0)
   rotateWeapon(player2, weapon2, weapon2.spinSpeed, direction2, weapon2State);
-
-  // прыжки
-  if (jumpCD1 > 0) jumpCD1--; 
-  else if (slashed === 0 && player1.hitFlash === 0 && player2.hitFlash === 0) {
-    randomJump(player1, (cd)=>jumpCD1=cd);
-  }
-  if (jumpCD2 > 0) jumpCD2--; 
-  else if (slashed === 0 && player1.hitFlash === 0 && player2.hitFlash === 0) {
-    randomJump(player2, (cd)=>jumpCD2=cd);
-  }
+else  rotateWeapon(player2, weapon2, 0, direction2, weapon2State);
 
   if(player1.name === "Mage") {
     weapon1.damage =  (weapon1.damage) + coef1 / 200;
@@ -205,12 +220,58 @@ if (weapon2.type === "bow") updateAndDrawArrows(p, weapon2, player1, weapon1, 2)
     updateVikingSpeed(weapon2);
   }
 
-
   function updateVikingSpeed(weapon) {
   if (weapon.name === "Viking" && !state.gameOver) {
     weapon.spinSpeed += 0.005 * weapon.vikingCoef; // наращиваем скорость
     if (weapon.spinSpeed > weapon.maxSpinSpeed) weapon.spinSpeed = weapon.maxSpinSpeed;
   }
+}
+
+[player1, player2].forEach(p => {
+  if (p.name === "Fighter") {
+    // границы арены
+    const minX = 20, maxX = 580, minY = 20, maxY = 580;
+
+    if (p.position.x < minX || p.position.x > maxX) {
+      Body.setVelocity(p, { x: -p.velocity.x, y: p.velocity.y });
+      Body.setPosition(p, { x: Math.max(minX, Math.min(maxX, p.position.x)), y: p.position.y });
+    }
+    if (p.position.y < minY || p.position.y > maxY) {
+      Body.setVelocity(p, { x: p.velocity.x, y: -p.velocity.y });
+      Body.setPosition(p, { x: p.position.x, y: Math.max(minY, Math.min(maxY, p.position.y)) });
+    }
+  }
+});
+
+if (player1.name === "Fighter") keepInsideArena(player1, 20, 580, 20, 580);
+if (player2.name === "Fighter") keepInsideArena(player2, 20, 580, 20, 580);
+
+function keepInsideArena(player, minX, maxX, minY, maxY) {
+  let x = player.position.x;
+  let y = player.position.y;
+  let vx = player.velocity.x;
+  let vy = player.velocity.y;
+
+  // проверяем X
+  if (x < minX) {
+    x = minX;
+    vx = Math.abs(vx); // отскакивает обратно
+  } else if (x > maxX) {
+    x = maxX;
+    vx = -Math.abs(vx);
+  }
+
+  // проверяем Y
+  if (y < minY) {
+    y = minY;
+    vy = Math.abs(vy);
+  } else if (y > maxY) {
+    y = maxY;
+    vy = -Math.abs(vy);
+  }
+
+  Body.setPosition(player, { x, y });
+  Body.setVelocity(player, { x: vx, y: vy });
 }
 
   if(player1.name === "Knight") player1Stat.textContent = weapon1.damage.toFixed(2);
@@ -219,9 +280,9 @@ if (weapon2.type === "bow") updateAndDrawArrows(p, weapon2, player1, weapon1, 2)
   else if(player1.name === "Archer")  player1Stat.textContent = weapon1.arrowsPerShot.toFixed(2);
   else if(player1.name === "Spearman")  player1Stat.textContent = weapon1.renderW.toFixed(2);
   else if(player1.name === "Shielder") player1Stat.textContent = '';
-  else if(player1.name === "Fighter") player1Stat.textContent = weapon1.damage.toFixed(2);
-  else if(player1.name === "Piper")  player1Stat.textContent = weapon1.arrowsPerShot.toFixed(2);
-  else if(player1.name === "Ninja")  player1Stat.textContent = weapon1.renderW.toFixed(2);
+  else if(player1.name === "Fighter") player1Stat.textContent =  (weapon1.damage * (Math.abs(player1.velocity.x) + Math.abs(player1.velocity.y))/10).toFixed(2);
+  else if(player1.name === "Piper")  player1Stat.textContent = weapon1.pipeStun.toFixed(2);
+  else if(player1.name === "Ninja")  player1Stat.textContent = weapon1.maxBounces .toFixed(2);
   else if(player1.name === "Samurai") player1Stat.textContent = weapon1.cuts.toFixed(2);
   else if(player1.name === "Viking") player1Stat.textContent = (weapon1.damage + weapon1.spinSpeed * weapon1.vikingCoef).toFixed(2);
   
@@ -231,9 +292,9 @@ if (weapon2.type === "bow") updateAndDrawArrows(p, weapon2, player1, weapon1, 2)
   else if(player2.name === "Archer")  player2Stat.textContent = weapon2.arrowsPerShot.toFixed(2);
   else if(player2.name === "Spearman")  player2Stat.textContent = weapon2.renderW.toFixed(2);
   else if(player2.name === "Shielder") player2Stat.textContent = '';
-  else if(player2.name === "Fighter") player2Stat.textContent = weapon2.damage.toFixed(2);
-  else if(player2.name === "Piper")  player2Stat.textContent = weapon2.arrowsPerShot.toFixed(2);
-  else if(player2.name === "Ninja")  player2Stat.textContent = weapon2.renderW.toFixed(2);
+  else if(player2.name === "Fighter") player2Stat.textContent = (weapon2.damage * (Math.abs(player2.velocity.x) + Math.abs(player2.velocity.y))/10).toFixed(2);
+  else if(player2.name === "Piper")  player2Stat.textContent = weapon2.pipeStun.toFixed(2);
+  else if(player2.name === "Ninja")  player2Stat.textContent = weapon2.maxBounces .toFixed(2);
   else if(player2.name === "Samurai") player2Stat.textContent = weapon2.cuts.toFixed(2);
   else if(player2.name === "Viking") player2Stat.textContent = (weapon2.damage + weapon2.spinSpeed * weapon2.vikingCoef).toFixed(2);
 
@@ -261,8 +322,6 @@ if (player2.name === "Shielder" && weapon2.shield?.active && !state.gameOver) {
   p.pop();
 }
 
-
-
 checkShieldCollisions(player1, player2,weapon1,weapon2,1,2);
 checkShieldCollisions(player2, player1,weapon2,weapon1,2,1);
 
@@ -275,13 +334,10 @@ function checkShieldCollisions(attacker, target, weapon, targetWeapon, attackerI
     }
 }
 
-
-
   if (player1.invul > 0) player1.invul--;
   if (player2.invul > 0) player2.invul--;
   if (clashCD > 0) clashCD--;
 
-  // столкновения оружий
   handleSwordClash(weapon1, weapon2, player1, player2, {
     clashCD,
     setClash: () => {
@@ -299,19 +355,57 @@ function checkShieldCollisions(attacker, target, weapon, targetWeapon, attackerI
   });
 
   if(player1.invul>0){
-     // Body.setVelocity(player1, { x: 0, y: 0 });
-      knockback(player1, player2, 12);
+    
+      
+      if(player2.name=="Fighter"){
+        Body.setVelocity(player1, { x: 0, y: 0 });
+      } else{
+         if (player1.stunTimer === 0) knockback(player1, player2, 12);
+      }
   } else {
-    randomJump(player1);
-  }
+        if (jumpCD1 > 0) jumpCD1--;
+      else {
+        const speed1 = Math.hypot(player1.velocity.x, player1.velocity.y);
+
+        // прыгать только если почти остановился
+        if (speed1 < 5 && player1.stunTimer === 0) {
+          randomJump(player1, cd => jumpCD1 = cd);
+        }
+      }
+}
 
   if(player2.invul>0){
     //Body.setVelocity(player2, { x: 0, y: 0 });
-    knockback(player2, player1, 12);
+      if(player1.name=="Fighter"){
+        Body.setVelocity(player2, { x: 0, y: 0 });
+      } else{
+         if (player2.stunTimer === 0) knockback(player2, player1, 12);
+      }
   } else {
-     randomJump(player2);
-  }
+          if (jumpCD2 > 0) jumpCD2--;
+      else {
+        const speed2 = Math.hypot(player2.velocity.x, player2.velocity.y);
 
+        if (speed2 < 5 && player2.stunTimer === 0) {
+          randomJump(player2, cd => jumpCD2 = cd);
+        }
+      }
+}
+
+
+if (player1.stunTimer > 0) {
+    player1.stunTimer--;
+
+    // замораживаем движение
+    Body.setVelocity(player1, { x: 0, y: 0 });
+    Body.setAngularVelocity(player1, 0);
+}
+
+if (player2.stunTimer > 0) {
+    player2.stunTimer--;
+    Body.setVelocity(player2, { x: 0, y: 0 });
+    Body.setAngularVelocity(player2, 0);
+}
 
   function updateAndDrawArrows(p, weapon, opponent, opponentWeapon, attackerIndex) {
   for (let i = weapon.arrows.length - 1; i >= 0; i--) {
@@ -375,7 +469,14 @@ if (wdist < Math.max(opponentWeapon.renderW, opponentWeapon.renderH)/2 + a.hitRa
   handleHit( p1 ,player1, player2, weapon1, weapon2 , 2, 1 , {
     setWinner: (w) => state.winner = w,
     setHP: () => {
-      state.hp2 = Math.max(0, state.hp2 - weapon1.damage);
+  let damage;
+  if(player2.name == "Fighter"){
+    damage =  (weapon1.damage * (Math.abs(player1.velocity.x) + Math.abs(player1.velocity.y))/10);
+  } else
+  damage = weapon1.damage;
+
+
+      state.hp2 = Math.max(0, state.hp2 - damage);
       if(player1.name === "Knight") weapon1.damage +=0.5;
       else if(player1.name === "Thief") weapon1.spinSpeed +=0.2;
       else if(player1.name === "Mage") {coef1+=1.2; weapon1.damage = 1}
@@ -390,7 +491,13 @@ if (wdist < Math.max(opponentWeapon.renderW, opponentWeapon.renderH)/2 + a.hitRa
   handleHit( p2 ,player2, player1, weapon2, weapon1 , 1, 2 , {
     setWinner: (w) => state.winner = w,
     setHP: () => {
-      state.hp1 = Math.max(0, state.hp1 - weapon2.damage);
+  let damage;
+  if(player2.name == "Fighter"){
+    damage =  (weapon2.damage * (Math.abs(player2.velocity.x) + Math.abs(player2.velocity.y))/10);
+  } else
+  damage = weapon2.damage;
+
+      state.hp1 = Math.max(0, state.hp1 - damage);
       if(player2.name === "Knight") weapon2.damage +=0.5;
       else if(player2.name === "Thief") weapon2.spinSpeed +=0.2;
       else if(player2.name === "Mage")  {coef2+=1.2; weapon2.damage = 1}
@@ -402,20 +509,6 @@ if (wdist < Math.max(opponentWeapon.renderW, opponentWeapon.renderH)/2 + a.hitRa
     }
   });
 
-  // эффект отбрасывания
-  if (slashed > 0) {
-    Body.setVelocity(player1, { x: 0, y: 0 });
-    Body.setVelocity(player2, { x: 0, y: 0 });
-    slashed--;
-  }
-
-  if (hited > 0) {
-    Body.setVelocity(player1, { x: 0, y: 0 });
-    Body.setVelocity(player2, { x: 0, y: 0 });
-    hited--;
-  }
-
-  // рисуем игроков
   if (!state.gameOver || state.winner !== 2) {
   drawBody(p, player1, p.color(0, 150, 255), state.hp1, 1);
   drawWeapon(p, weapon1, p.color(200), 1);
@@ -424,9 +517,6 @@ if (wdist < Math.max(opponentWeapon.renderW, opponentWeapon.renderH)/2 + a.hitRa
   drawBody(p, player2, p.color(255, 100, 100), state.hp2, 2);
   drawWeapon(p, weapon2, p.color(200), 2);
   }
-
-  //drawHPBar(p, 20, 30, 220, 14, state.hp1, p.color(70, 80, 205), "Thief");
-  //drawHPBar(p, p.width - 240, 30, 220, 14, state.hp2, p.color(205, 40, 40), "Knight");
 
   if (state.gameOver) {
     drawEndButtons(p);
@@ -441,7 +531,7 @@ export function initPlayers(p) {
 
   let char2 = createCharacter(p2name, 440, 200, 2);
   player2 = char2.player;
-  weapon2 = char2.weapon;
+  weapon2 = char2.weapon;  
 
   setPlayerSkins(player1.skin, player2.skin);
   setWeaponSprites(weapon1.skin, weapon2.skin);
@@ -485,9 +575,9 @@ if(weapon2.shield){
   else if(player1.name === "Samurai") document.getElementById("special1").textContent = "Cuts:";
   else if(player1.name === "Viking") document.getElementById("special1").textContent = "Spin/dmg:";
   else if(player1.name === "Shielder") document.getElementById("special1").textContent = "";
-  else if(player1.name === "Fighter") document.getElementById("special1").textContent = "Max speed:";
+  else if(player1.name === "Fighter") document.getElementById("special1").textContent = "Speed/dmg:";
   else if(player1.name === "Piper") document.getElementById("special1").textContent = "Stun:";
-  else if(player1.name === "Ninja") document.getElementById("special1").textContent = "Max bounce:";
+  else if(player1.name === "Ninja") document.getElementById("special1").textContent = "Max bounces:";
 
   if(player2.name === "Knight") document.getElementById("special2").textContent = "Damage:";
   else if(player2.name === "Thief") document.getElementById("special2").textContent = "Spin speed:";
@@ -497,9 +587,9 @@ if(weapon2.shield){
   else if(player2.name === "Samurai") document.getElementById("special2").textContent = "Cuts:";
   else if(player2.name === "Viking") document.getElementById("special2").textContent = "Spin/dmg:";
   else if(player2.name === "Shielder") document.getElementById("special2").textContent = "";
-  else if(player2.name === "Fighter") document.getElementById("special2").textContent = "Max speed:";
+  else if(player2.name === "Fighter") document.getElementById("special2").textContent = "Speed/dmg:";
   else if(player2.name === "Piper") document.getElementById("special2").textContent = "Stun:";
-  else if(player2.name === "Ninja") document.getElementById("special2").textContent = "Max bounce:";
+  else if(player2.name === "Ninja") document.getElementById("special2").textContent = "Max bounces:";
 
   World.add(world, [player1, player2, weapon1, weapon2]);
 }

@@ -147,9 +147,10 @@ body {
 #menu-screen {
   position: relative;
   width: 60%;
-  height: 60vh;
-  overflow: hidden;
+  min-height: 60vh;  /* вместо фиксированной */
+  overflow: visible; /* чтобы ничего не обрезалось */
 }
+
 
 #menu-screen::before {
   content: "";
@@ -183,11 +184,13 @@ body {
   flex-direction: column;
   align-items: center;
   padding: 50px;
-  background: rgba(255,255,255,0.15);
+  background: rgba(255,255,255,0.15);  /* прозрачность остаётся */
+  backdrop-filter: blur(6px);          /* размываем фон под панелью */
   border: 4px solid #a97c50;
   border-radius: 15px;
   box-shadow: 0 0 15px rgba(0,0,0,0.2);
 }
+
 
 .character-panel h3 {
   font-family: 'Delicious Handrawn', cursive;

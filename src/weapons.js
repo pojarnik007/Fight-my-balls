@@ -11,12 +11,18 @@ export function rotateWeapon(player, weapon, speed, direction = 1, weaponState) 
   // угол оружия увеличивается на текущую скорость
   weaponState.angle += weaponState.currentSpeed * direction;
 
-  // позиция оружия по орбите вокруг игрока
-  Body.setPosition(weapon, {
-    x: player.position.x + Math.cos(weaponState.angle) * weapon.orbitRadius,
-    y: player.position.y + Math.sin(weaponState.angle) * weapon.orbitRadius
-  });
-  Body.setAngle(weapon, weaponState.angle);
+  if (weapon.type === "fight") {
+    // Для типа "fight" вращаем в центре игрока
+    Body.setPosition(weapon, { x: player.position.x, y: player.position.y });
+    Body.setAngle(weapon, weaponState.angle);
+  } else {
+    // Обычное вращение по орбите
+    Body.setPosition(weapon, {
+      x: player.position.x + Math.cos(weaponState.angle) * weapon.orbitRadius,
+      y: player.position.y + Math.sin(weaponState.angle) * weapon.orbitRadius
+    });
+    Body.setAngle(weapon, weaponState.angle);
+  }
 
 if (weapon.shield?.active && weapon.shield.body) {
     const shield = weapon.shield;

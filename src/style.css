@@ -1,5 +1,5 @@
 #fight-title {
-  display: none; /* скрыт по умолчанию */
+  display: none;
   font-family: 'Delicious Handrawn', cursive;
   font-size: 48px;
   font-weight: bold;
@@ -7,53 +7,49 @@
   background-size: cover;
   background-repeat: no-repeat;
   background-position: center;
-  color: rgb(250, 250, 50);
-  /* display: flex; */
+  color: rgb(250 250 50);
   flex-direction: column;
-  justify-content: flex-start; /* текст тянется вверх */
+  justify-content: flex-start;
   align-items: center;
-  padding-top: 40px; 
+  padding-top: 40px;
   border-radius: 10px;
   min-width: 30%;
-  min-height: 180px;          /* фон фикс. высоты */
+  min-height: 180px;
   margin-top: -10px;
   margin-bottom: -110px;
 }
 
-.hud { width: 600px; 
-  display: flex; 
-  justify-content: space-between; 
+.hud {
+  width: 600px;
+  display: flex;
+  justify-content: space-between;
   align-items: center;
-   border-radius: 0 0 20px 20px;
-  padding: 0; 
-  z-index: 5; }
+  border-radius: 0 0 20px 20px;
+  padding: 0;
+  z-index: 5;
+}
 
-
-body { 
+body {
   font-family: sans-serif;
-   margin: 0;
-    padding: 0;
-     background-image: 
-     linear-gradient(rgba(0,0,0,0.4),
-      rgba(0,0,0,0.4)), 
-      url("/public/bodyback.jpg");
-       background-size: cover; 
-       background-repeat: no-repeat; 
-       background-position: center; 
-       background-attachment: fixed; 
+  margin: 0;
+  padding: 0;
+  background-image:
+  linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)),
+  url('/public/bodyback.jpg');
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-attachment: fixed;
 }
 
 .stage {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0;               
+  gap: 0;
   text-align: center;
   padding: 20px 0;
 }
-
-
-
 
 #menu-screen button {
   margin: 5px;
@@ -66,8 +62,8 @@ body {
   color: white;
 }
 
-/* группы и элементы HUD */
-.left-group, .right-group {
+.left-group,
+.right-group {
   display: flex;
   gap: 0;
   z-index: 5;
@@ -78,17 +74,17 @@ body {
 }
 
 .left-group .item {
-     font-family: 'Delicious Handrawn', cursive;
+  font-family: 'Delicious Handrawn', cursive;
   font-size: 34px;
   color: rgb(23 83 173);
   font-weight: bold;
 }
 
 .right-group .item {
-      font-family: 'Delicious Handrawn', cursive;
+  font-family: 'Delicious Handrawn', cursive;
   font-size: 34px;
   color: rgb(156 26 14);
-   font-weight: bold;
+  font-weight: bold;
 }
 
 .canvas-wrapper {
@@ -98,12 +94,12 @@ body {
 }
 
 .canvas-wrapper::before {
-  content: "";
+  content: '';
   position: absolute;
   inset: -99px -100px -145px;
-  background: 
-   linear-gradient(rgba(0,0,0,0.06), rgba(0,0,0,0.06)),
-  url("/public/frame.png") no-repeat center;
+  background:
+  linear-gradient(rgba(0, 0, 0, 0.06), rgba(0, 0, 0, 0.06)),
+  url('/public/frame.png') no-repeat center;
   background-size: 100% 100%;
   pointer-events: none;
   z-index: 2;
@@ -116,18 +112,18 @@ body {
   z-index: 1;
 }
 
-#special1, #special2 {
+#special1,
+#special2 {
   display: none;
 }
 
-#player1Stat, #player2Stat {
+#player1Stat,
+#player2Stat {
   margin-left: -30px;
   display: inline-block;
-  width: 30px; /* подбираешь под максимальное значение */
+  width: 30px;
   text-align: center;
 }
-
-
 
 .menu-screen {
   display: flex;
@@ -135,10 +131,10 @@ body {
   align-items: center;
   gap: 40px;
   padding: 40px;
-  background: rgba(255, 255, 255, 0.1); /* полупрозрачная панель */
-  border: 12px solid #d4b25d;           /* рамка под картину */
+  background: rgba(255, 255, 255, 0.1);
+  border: 12px solid #d4b25d;
   border-radius: 20px;
-  box-shadow: 0 0 30px rgba(0,0,0,0.5);
+  box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
   backdrop-filter: blur(4px);
   max-width: 1200px;
   margin: 60px auto;
@@ -147,25 +143,24 @@ body {
 #menu-screen {
   position: relative;
   width: 60%;
-  min-height: 60vh;  /* вместо фиксированной */
-  overflow: visible; /* чтобы ничего не обрезалось */
+  min-height: 60vh;
+  overflow: visible;
 }
 
-
 #menu-screen::before {
-  content: "";
+  content: '';
   position: absolute;
   inset: 0;
   background: url('/public/background2.png') center/cover no-repeat;
-  filter: blur(1px);      /* задаём размытие */
-  z-index: -1;            /* чтобы быть позади контента */
+  filter: blur(1px);
+  z-index: -1;
 }
 
 .menu-title {
   font-family: 'Delicious Handrawn', cursive;
   font-size: 78px;
-  color: rgb(250, 250, 50);
-  text-shadow: 2px 2px 5px rgba(0,0,0,0.6);
+  color: rgb(250 250 50);
+  text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.6);
   margin-bottom: 0;
   margin-top: -20px;
   font-weight: 100;
@@ -184,13 +179,12 @@ body {
   flex-direction: column;
   align-items: center;
   padding: 50px;
-  background: rgba(255,255,255,0.15);  /* прозрачность остаётся */
-  backdrop-filter: blur(6px);          /* размываем фон под панелью */
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(6px);
   border: 4px solid #a97c50;
   border-radius: 15px;
-  box-shadow: 0 0 15px rgba(0,0,0,0.2);
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
 }
-
 
 .character-panel h3 {
   font-family: 'Delicious Handrawn', cursive;
@@ -199,29 +193,22 @@ body {
   margin-top: -10px;
   font-size: 40px;
   font-weight: 100;
-  text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
-}
-
-.char-buttons button {
-  font-family: 'Delicious Handrawn', cursive;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
 }
 
 .char-btn {
-  font-size: 25px !important;   /* обязательно !important */
-  /* font-weight: bold; */
+  font-size: 25px !important;
   text-align: center;
-  line-height: normal;           /* убираем влияние стандартного line-height */
+  line-height: normal;
   padding: 12px 20px;
   margin: 5px;
   border-radius: 10px;
   border: 2px solid #d4b25d;
-  background: rgba(0,0,0,0.2);
+  background: rgba(0, 0, 0, 0.2);
   color: #fff;
   cursor: pointer;
   transition: all 0.2s;
 }
-
-
 
 .char-buttons button:hover {
   background: rgba(255, 255, 255, 0.3);
@@ -234,20 +221,22 @@ body {
   border-color: #fff;
 }
 
-.start-btn {
-  margin-top: 20px;
+.char-buttons button {
   font-family: 'Delicious Handrawn', cursive;
- font-size: 25px !important; 
-  padding: 15px 40px;
+}
+
+.start-btn {
+  font-family: 'Delicious Handrawn', cursive;
+  /* font-size: 25px !important; */
   border: 4px solid #d4b25d;
   border-radius: 15px;
-  background: rgba(0,0,0,0.25);
+  background: rgba(0, 0, 0, 0.25);
   color: #fff;
   cursor: pointer;
   transition: all 0.2s;
 }
 
 .start-btn:hover {
-  background: rgba(255,255,255,0.3);
+  background: rgba(255, 255, 255, 0.3);
   transform: scale(1.05);
 }

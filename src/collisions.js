@@ -1,147 +1,143 @@
-import Matter from "matter-js";
-import { hp1, hp2, gameOver, winner } from "./state.js";
-import {state} from "./state.js";
-import { playClash, playHit } from "./audio.js";
-import { growSpear, handleShieldCollision, handleShieldHit } from "./players.js";
-import { addCut } from "./render.js";
-import { KatanaCutImg, lastHit1, setLastHit1 } from "./game.js";
+import Matter from 'matter-js'
+import { state } from './state.js'
+import { playClash, playHit } from './audio.js'
+import { growSpear } from './players.js'
+import { addCut } from './render.js'
+import { KatanaCutImg, setLastHit1 } from './game.js'
 
-const { SAT, Body, World, Engine } = Matter;
+const { SAT, Body } = Matter
 
 export function knockback(body, from, force) {
-  let dx = body.position.x - from.position.x;
-  let dy = body.position.y - from.position.y;
-  let len = Math.sqrt(dx*dx + dy*dy);
-  if (len === 0) len = 0.1;
-  dx /= len; dy /= len;
-
-  Body.setVelocity(body, { x: dx * force, y: dy * force });
+  let dx = body.position.x - from.position.x
+  let dy = body.position.y - from.position.y
+  let len = Math.sqrt(dx * dx + dy * dy)
+  if (len === 0) len = 0.1
+  dx /= len
+  dy /= len
+  Body.setVelocity(body, { x: dx * force, y: dy * force })
 }
 
-const fighterAccel = 0.15; // коэффициент ускорения, чем меньше — тем медленнее набирает скорость
+export function handleHit(
+  player,
+  attacker,
+  target,
+  weapon,
+  targetWeapon,
+  targetIndex,
+  attackerIndex,
+  vars,
+) {
+  if (state.gameOver) return
+  if (!attacker || !target || !weapon || !targetWeapon) return
+  if (!attacker.position || !target.position) return
 
-function accelerateFighter(player, angle, damage) {
-  const forceX = Math.cos(angle) * damage * fighterAccel;
-  const forceY = Math.sin(angle) * damage * fighterAccel;
-
-  Body.setVelocity(player, {
-    x: player.velocity.x + forceX,
-    y: player.velocity.y + forceY
-  });
-}
-
-
-export function handleHit(player, attacker, target, weapon , targetWeapon, targetIndex, attackerIndex , vars) {
-  if (state.gameOver) return;
-  if (!attacker || !target || !weapon || !targetWeapon) return;
-  if (!attacker.position || !target.position) return;
-
-  const { setWinner, setHP } = vars;
-  if (target.invul > 0 || state.gameOver) return;
-  let col = SAT.collides(weapon, target);
+  const { setWinner, setHP } = vars
+  if (target.invul > 0 || state.gameOver) return
+  let col = SAT.collides(weapon, target)
   if (col && col.collided) {
-    
-    if(attacker.name === 'Thief' ){
-          target.invul = 10;
-    } else {
-    target.invul = 20;
-  }
 
-  if(attacker.name !== 'Archer' && attacker.name !== 'Shielder' && attacker.name !== 'Ninja'  ) {playHit();}
-  if (weapon.name === "Spearman") {
-  growSpear(weapon, 5);
-  target.invul = 7;
-  }
+    target.invul = 20
+    target.hitFlash = 15
+    setLastHit1(state.frame)
+    target.flashStrength = 255
+    target.flashType = 'hit'
 
-    
-    if(attacker.name === 'Piper' ){
-          target.stunTimer = weapon.pipeStun; // например 60 кадров = 1 секунда
-          weapon.pipeStun += 15;
+    if (
+      attacker.name === 'Archer' ||
+      (attacker.name === 'Shielder' && attacker.name !== 'Ninja')
+    ) {
+      target.hitFlash = 0
+      target.invul = 0
     }
 
-
-    setLastHit1(state.frame);
-
-
-
-  if(attacker.name === 'Archer' || attacker.name === "Shielder" && attacker.name !== 'Ninja' ){
-         target.hitFlash = 0;
-          target.invul = 0;
-    } else {
-         target.hitFlash = 15;
+    if (
+      attacker.name !== 'Archer' &&
+      attacker.name !== 'Shielder' &&
+      attacker.name !== 'Ninja'
+    ) {
+      playHit()
     }
 
-    if (weapon.type === "fight") {
-  weapon.fighterMaxSpeed += 2;
-  weapon.fighterSpeed = Math.min(weapon.fighterSpeed + 0.5, weapon.fighterMaxSpeed);
-  //weapon.damage +=1;
-    target.invul = 20;
-}
+    if (attacker.name != 'Viking' && attacker.name != 'Samurai')
+      setHP(attacker, target)
 
-    if (attacker.name === "Viking") {
-      // урон зависит от скорости
-      let damageDealt = weapon.damage + weapon.spinSpeed * weapon.vikingCoef;
-      state[`hp${targetIndex}`] = Math.max(0, state[`hp${targetIndex}`] - damageDealt);
+    if (attacker.name === 'Thief') {
+      target.invul = 10
+    }
 
-      // сброс скорости к начальному значению
-      weapon.spinSpeed = weapon.initialSpinSpeed;
+    if (weapon.name === 'Spearman') {
+      growSpear(weapon, 5)
+      target.invul = 7
+    }
 
-      // увеличиваем коэффициент прироста урона
-      weapon.vikingCoef += 0.05; // можно настроить рост
-} else
-if(attacker.name === "Samurai") {
-  weapon.cuts = (weapon.cuts || 0) + 1;
+    if (attacker.name === 'Piper') {
+      target.stunTimer = weapon.pipeStun
+      weapon.pipeStun += 15
+    }
 
-  for (let i = 0; i < weapon.cuts; i++) {
-    setTimeout(() => {
-      // урон
-      const hpKey = targetIndex;
-      if(targetIndex === 1){
-      state.hp1 = Math.max(0, state.hp1-1);
-    
-      if (state.hp1 === 0) {
-        state.winner = attackerIndex;
-        state.gameOver = true;
+    if (weapon.type === 'fight') {
+      weapon.fighterMaxSpeed += 2
+      weapon.fighterSpeed = Math.min(
+      weapon.fighterSpeed + 0.5,
+      weapon.fighterMaxSpeed,
+      )
+      target.stunTimer = 20;
+    }
+
+    if (attacker.name === 'Viking') {
+      let damageDealt = weapon.damage + weapon.spinSpeed * weapon.vikingCoef
+      state[`hp${targetIndex}`] = Math.max(
+        0,
+        state[`hp${targetIndex}`] - damageDealt,
+      )
+      weapon.spinSpeed = weapon.initialSpinSpeed
+      weapon.vikingCoef += 0.05
+    }
+
+    if (attacker.name === 'Samurai') {
+      weapon.cuts = (weapon.cuts || 0) + 1
+
+      for (let i = 0; i < weapon.cuts; i++) {
+        setTimeout(() => {
+          if (targetIndex === 1) {
+            state.hp1 = Math.max(0, state.hp1 - 1)
+            if (state.hp1 === 0) {
+              state.winner = attackerIndex
+              state.gameOver = true
+            }
+          } else {
+            state.hp2 = Math.max(0, state.hp2 - 1)
+            if (state.hp2 === 0) {
+              state.winner = attackerIndex
+              state.gameOver = true
+            }
+          }
+          target.hitFlash = 15
+          playHit()
+          addCut(target, KatanaCutImg)
+        }, i * 150)
       }
     }
-    else{
-      state.hp2 = Math.max(0, state.hp2-1);
-    
-      if (state.hp2 === 0) {
-        state.winner = attackerIndex;
-        state.gameOver = true;
-      }
-    }
-
-      target.hitFlash = 15;
-      playHit();
-
-      // добавляем визуальный порез
-      addCut(target, KatanaCutImg); // katanaCutImg - загруженный спрайт пореза
-
-    }, i * 150);
-  }
-} else   {
-  setHP(attacker, target); // обычный урон для других классов
-}
-
-target.flashStrength = 255;
-target.flashType = "hit";
-
-
   }
 }
 
 export function handleSwordClash(weapon1, weapon2, player1, player2, vars) {
-  const { clashCD, setClash } = vars;
-  if (clashCD > 0 || state.gameOver) return;
-  const clash = SAT.collides(weapon1, weapon2);
-  if (clash && clash.collided && player1.name !=="Archer" && player2.name !=="Archer" && player1.name !=="Fighter" && player2.name !=="Fighter" ) {
-    playClash();
-     if (player1.stunTimer === 0) knockback(player1, player2, 7);
-     if (player2.stunTimer === 0) knockback(player2, player1, 7);
-    setClash(); 
-    weapon1.clashFlash = 255;
-    weapon2.clashFlash = 255;
+  const { clashCD, setClash } = vars
+  if (clashCD > 0 || state.gameOver) return
+  const clash = SAT.collides(weapon1, weapon2)
+  if (
+    clash &&
+    clash.collided &&
+    player1.name !== 'Archer' &&
+    player2.name !== 'Archer' &&
+    player1.name !== 'Fighter' &&
+    player2.name !== 'Fighter'
+  ) {
+    playClash()
+    if (player1.stunTimer === 0) knockback(player1, player2, 7)
+    if (player2.stunTimer === 0) knockback(player2, player1, 7)
+    setClash()
+    weapon1.clashFlash = 255
+    weapon2.clashFlash = 255
   }
 }

@@ -1,50 +1,54 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Delicious+Handrawn&family=Edu+NSW+ACT+Cursive:wght@400..700&family=Homemade+Apple&family=Playwrite+MX+Guides&display=swap" rel="stylesheet">
-  <meta charset="UTF-8" />
-  <title>Ball Fight Simulation</title>
-</head>
-<body>
-  <main class="stage">
-    <!-- Меню выбора персонажей -->
-<div id="menu-screen" class="menu-screen">
-  <h2 class="menu-title">Choose your fighter</h2>
-  <div class="characters-wrapper">
-    <div class="character-panel">
-      <h3>Player 1</h3>
-      <div id="char-buttons-p1" class="char-buttons"></div>
-    </div>
-    <div class="character-panel">
-      <h3>Player 2</h3>
-      <div id="char-buttons-p2" class="char-buttons"></div>
-    </div>
-  </div>
-  <button id="start-btn" class="start-btn">Start Fight</button>
-</div>
-
-
-    <!-- Сам канвас -->
-    <div id="game-wrapper" style="display:none;">
-      <h2 id="fight-title">Thief VS Knight</h2>
-      <div class="canvas-wrapper">
-        <div id="sketch-holder"></div>
-      </div>
-      <div class="hud">
-        <div class="left-group">
-          <div class="item" id="special1">Spin speed:</div>
-          <div class="item" id="player1Stat"></div>
+  <head>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Delicious+Handrawn&family=Edu+NSW+ACT+Cursive:wght@400..700&family=Homemade+Apple&family=Playwrite+MX+Guides&display=swap"
+      rel="stylesheet"
+    />
+    <meta charset="UTF-8" />
+    <title>Ball Fight Simulation</title>
+  </head>
+  <body>
+    <main class="stage">
+      <!-- Меню выбора персонажей -->
+      <div id="menu-screen" class="menu-screen">
+        <h2 class="menu-title">Choose your fighter</h2>
+        <div class="characters-wrapper">
+          <div class="character-panel">
+            <h3>Player 1</h3>
+            <div id="char-buttons-p1" class="char-buttons"></div>
+          </div>
+          <div class="character-panel">
+            <h3>Player 2</h3>
+            <div id="char-buttons-p2" class="char-buttons"></div>
+          </div>
         </div>
-        <div class="right-group">
-          <div class="item" id="special2">Damage:</div>
-          <div class="item" id="player2Stat"></div>
+        <button id="start-btn" class="start-btn">Start Fight</button>
+      </div>
+
+      <!-- Сам канвас -->
+      <div id="game-wrapper" style="display: none">
+        <h2 id="fight-title">Thief VS Knight</h2>
+        <div class="canvas-wrapper">
+          <div id="sketch-holder"></div>
+        </div>
+        <div class="hud">
+          <div class="left-group">
+            <div class="item" id="special1">Spin speed:</div>
+            <div class="item" id="player1Stat"></div>
+          </div>
+          <div class="right-group">
+            <div class="item" id="special2">Damage:</div>
+            <div class="item" id="player2Stat"></div>
+          </div>
         </div>
       </div>
-    </div>
-  </main>
-</body>
-
+    </main>
+  </body>
 </html>

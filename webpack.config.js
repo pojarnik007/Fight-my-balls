@@ -23,10 +23,10 @@ module.exports = (env) => {
           test: /\.css$/i,
           use: ['style-loader', 'css-loader'],
         },
-      {
-        test: /\.(png|jpg|jpeg|gif|svg|wav|mp3)$/i,
-        type: "asset/resource",
-      },
+        {
+          test: /\.(png|jpg|jpeg|gif|svg|wav|mp3)$/i,
+          type: 'asset/resource',
+        },
       ],
     },
 

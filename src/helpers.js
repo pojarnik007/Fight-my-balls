@@ -16,7 +16,7 @@ import { rotateWeapon, weapon1State, weapon2State } from './weapons.js'
 import { arrow, bgImg } from "./game.js"
 import { randomJump } from "./effects.js"
 import { playClash, playHit } from "./audio.js"
-import { drawEndButtons } from './index.js'
+import {  showEndButtons } from './index.js'
 
 // ===== Общие =====
 export function drawBackground(p) {
@@ -34,8 +34,13 @@ export function handleGameOverScreen(p, player1, player2) {
       p.fill(250, 250, 50)
       p.stroke(100, 100, 0) 
       p.strokeWeight(0)
+      if(state.currentMode == "bot"){
+       if (state.winner === 1) p.text('You Won! +' + Math.floor(state.currentBotBet * 1.5) + '$' , p.width / 2, p.height / 2)
+        else  p.text('You lost! -' + state.currentBotBet + '$', p.width / 2, p.height / 2)
+      } else{
       if (state.winner === 1) p.text(player1.name + ' wins!', p.width / 2, p.height / 2)
-      else p.text(player2.name + ' wins!', p.width / 2, p.height / 2)
+      else p.text(player2.name + ' wins!', p.width / 2, p.height / 2)}
+    showEndButtons();
     }
 }
 
@@ -122,7 +127,7 @@ export function updateAndDrawArrows(p, weapon, opponent, opponentWeapon, attacke
       if (dist < opponent.circleRadius + a.hitRadius) {
         state[`hp${opponent.index}`] = Math.max(
           0,
-          state[`hp${opponent.index}`] - 1,
+          state[`hp${opponent.index}`] - 4,
         )
         opponent.hitFlash = 15
         weapon.arrowsPerShot += 1
@@ -159,13 +164,13 @@ export function updateAndDrawArrows(p, weapon, opponent, opponentWeapon, attacke
 }
 
 // ===== Ротация оружия =====
-export function updateWeaponsRotation(player1, player2, weapon1, weapon2, direction1, direction2) {
+export function updateWeaponsRotation(player1, player2, weapon1, weapon2,) {
   if (player1.stunTimer === 0)
-    rotateWeapon(player1, weapon1, weapon1.spinSpeed, direction1, weapon1State)
-  else rotateWeapon(player1, weapon1, 0, direction1, weapon1State)
+    rotateWeapon(player1, weapon1, weapon1.spinSpeed, weapon1.direction, weapon1State)
+  else rotateWeapon(player1, weapon1, 0, weapon1.direction, weapon1State)
   if (player2.stunTimer === 0)
-    rotateWeapon(player2, weapon2, weapon2.spinSpeed, direction2, weapon2State)
-  else rotateWeapon(player2, weapon2, 0, direction2, weapon2State)
+    rotateWeapon(player2, weapon2, weapon2.spinSpeed, weapon2.direction, weapon2State)
+  else rotateWeapon(player2, weapon2, 0, weapon2.direction, weapon2State)
 }
 
 // ===== Бонусы маг/викинг =====
@@ -304,7 +309,7 @@ export function checkShieldCollisions(
 }
 
 // ===== КД и урон =====
-export function updateCooldownsAndClashes(player1, player2, weapon1, weapon2, direction1, direction2, clashCD, slashed) {
+export function updateCooldownsAndClashes(player1, player2, weapon1, weapon2, clashCD, slashed) {
       if (player1.invul > 0) player1.invul--
       if (player2.invul > 0) player2.invul--
       if (clashCD > 0) clashCD--
@@ -317,8 +322,8 @@ export function updateCooldownsAndClashes(player1, player2, weapon1, weapon2, di
           if (player1.name === 'Spearman' || player2.name === 'Spearman')
             clashCD = 15
           else clashCD = 20
-          direction1 = -direction1
-          direction2 = -direction2
+          weapon1.direction = -weapon1.direction
+          weapon2.direction = -weapon2.direction
           player1.clashFlash = 5
           player2.clashFlash = 5
         },
@@ -335,9 +340,5 @@ export function drawEntities(p, player1, player2, weapon1, weapon2) {
     if (!state.gameOver || state.winner !== 1) {
       drawBody(p, player2, p.color(255, 100, 100), state.hp2, 2)
       drawWeapon(p, weapon2, p.color(200), 2)
-    }
-  
-    if (state.gameOver) {
-      drawEndButtons(p);
     }
 }

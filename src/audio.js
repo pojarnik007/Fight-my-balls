@@ -1,6 +1,11 @@
-let clashSound = new Audio('/clash.wav')
-let hitSound = new Audio('/hit.wav')
-let shot = new Audio('/shot.mp3')
+import clash from './audioAssets/clash.wav';
+import hit from './audioAssets/hit.wav';
+import shotm from './audioAssets/shot.mp3';
+
+
+let clashSound = new Audio(clash)
+let hitSound = new Audio(hit)
+let shot = new Audio(shotm)
 
 export function playClash() {
   const s = clashSound.cloneNode(true)

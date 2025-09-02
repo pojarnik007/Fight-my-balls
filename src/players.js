@@ -76,7 +76,7 @@ export function createWeapon(player, w, h, skin, name, type) {
   weapon.skin = skin
   weapon.name = name
   weapon.type = type
-
+  weapon.direction = 0;
   if (name === 'Shielder') {
     const shieldWidth = w // ширина щита
     const shieldHeight = h // высота щита
@@ -185,20 +185,20 @@ export function createCharacter(type, x, y, playerNum) {
   switch (type) {
     case 'Thief':
       weapon = createWeapon(player, 80, 24, thiefsword, 'Thief', 'sword')
-      weapon.damage = 2
+      weapon.damage = 4
       weapon.spinSpeed = 1.3
       break
 
     case 'Knight':
       weapon = createWeapon(player, 130, 24, knightsword, 'Knight', 'sword')
-      weapon.damage = 1
+      weapon.damage = 6
       weapon.spinSpeed = 0.9
       break
 
     case 'Mage':
       weapon = createWeapon(player, 100, 24, magic, 'Mage', 'sword')
-      weapon.damage = 1
-      weapon.spinSpeed = 0.6
+      weapon.damage = 4
+      weapon.spinSpeed = 1.2
       break
 
     case 'Archer':
@@ -215,20 +215,20 @@ export function createCharacter(type, x, y, playerNum) {
 
     case 'Spearman':
       weapon = createWeapon(player, 100, 30, spear, 'Spearman', 'sword')
-      weapon.damage = 1
+      weapon.damage = 5
       weapon.spinSpeed = 2
       break
 
     case 'Samurai':
-      weapon = createWeapon(player, 140, 40, katana, 'Samurai', 'sword')
-      weapon.cuts = 0
-      weapon.damage = 1
+      weapon = createWeapon(player, 100, 40, katana, 'Samurai', 'sword')
+      weapon.cuts = 4
+      weapon.damage = 0
       weapon.spinSpeed = 1.1
       break
 
     case 'Viking':
       weapon = createWeapon(player, 100, 80, axe, 'Viking', 'sword')
-      weapon.damage = 1
+      weapon.damage = 4
       weapon.spinSpeed = 0.5
       weapon.initialSpinSpeed = 0.5 // начальная скорость
       weapon.maxSpinSpeed = 40 // максимальная скорость
@@ -243,7 +243,7 @@ export function createCharacter(type, x, y, playerNum) {
 
     case 'Piper':
       weapon = createWeapon(player, 140, 60, pipe, 'Piper', 'sword')
-      weapon.damage = 1.3
+      weapon.damage = 5
       weapon.spinSpeed = 1.2
       weapon.pipeStun = 1
       break
@@ -258,9 +258,9 @@ export function createCharacter(type, x, y, playerNum) {
 
     case 'Fighter':
       weapon = createWeapon(player, 80, 80, suriken, 'Fighter', 'fight')
-      weapon.damage = 1
+      weapon.damage = 5
       weapon.spinSpeed = 1
-      player.fighterSpeedCoef = 1
+      player.fighterSpeedCoef = 5
       weapon.fighterSpeed = weapon.fighterSpeed || 2 // базовая сила при попадании
       weapon.fighterMaxSpeed = weapon.fighterMaxSpeed || 6 // макс скорость
 
@@ -440,7 +440,7 @@ export function updateShurikens(
     const dy = a.y - opponent.position.y
     const dist = Math.sqrt(dx * dx + dy * dy)
     if (dist < opponent.circleRadius + a.hitRadius) {
-      state[`hp${opponentHp}`] = Math.max(0, state[`hp${opponentHp}`] - 1)
+      state[`hp${opponentHp}`] = Math.max(0, state[`hp${opponentHp}`] - 4)
       playHit()
       opponent.hitFlash = 15
       weapon.maxBounces += 1 // каждый удар увеличивает отскоки нового сюрикена
@@ -460,7 +460,7 @@ export function updateShurikens(
     if (wdist < weaponRadius + a.hitRadius) {
       opponentWeapon.clashFlash = 255
       playClash()
-      weapon.arrows.splice(i, 1) // сюрикен исчезает при парировании
+      weapon.arrows.splice(i, 1)
       if (opponent.name === 'Shielder')
         handleShieldHit(
           ninja,

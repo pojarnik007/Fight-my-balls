@@ -4,6 +4,8 @@ export const state = {
   hp2: 100,
   gameOver: false,
   winner: '',
+  currentMode: "",
+  currentBotBet: 0,
 }
 
 export function resetState() {
@@ -12,4 +14,7 @@ export function resetState() {
   state.hp2 = 100
   state.gameOver = false
   state.winner = ''
+  state.currentMode = ""     
+  state.currentBotBet = 0   
 }
+

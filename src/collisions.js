@@ -5,6 +5,7 @@ import { growSpear } from './players.js'
 import { addCut } from './render.js'
 import { KatanaCutImg, setLastHit1 } from './game.js'
 
+var cutIndex =  0;
 const { SAT, Body } = Matter
 
 export function knockback(body, from, force) {
@@ -95,22 +96,23 @@ export function handleHit(
     }
 
     if (attacker.name === 'Samurai') {
-      weapon.cuts = (weapon.cuts || 0) + 1
+      if(cutIndex === 0){
+          weapon.cuts = (weapon.cuts || 0) + 1;
+          cutIndex = 1;
+          if (weapon.cuts > 4) {
+            weapon.cuts = (weapon.cuts || 0) + 1;
+          }
+      } else {
+        cutIndex = 0;
+      }
+
 
       for (let i = 0; i < weapon.cuts; i++) {
         setTimeout(() => {
           if (targetIndex === 1) {
             state.hp1 = Math.max(0, state.hp1 - 1)
-            if (state.hp1 === 0) {
-              state.winner = attackerIndex
-              state.gameOver = true
-            }
           } else {
             state.hp2 = Math.max(0, state.hp2 - 1)
-            if (state.hp2 === 0) {
-              state.winner = attackerIndex
-              state.gameOver = true
-            }
           }
           target.hitFlash = 15
           playHit()

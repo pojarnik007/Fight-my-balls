@@ -37,7 +37,30 @@ export function handleGameOverScreen(p, player1, player2) {
       if(state.currentMode == "bot"){
        if (state.winner === 1) p.text('You Won! +' + Math.floor(state.currentBotBet * 1.5) + '$' , p.width / 2, p.height / 2)
         else  p.text('You lost! -' + state.currentBotBet + '$', p.width / 2, p.height / 2)
-      } else{
+      } else if(state.currentMode === "botvsbot")
+              {
+                if (state.winner === 1){
+                  if(state.currentChoosenWinner === "bot1")
+                  {
+                      p.text('Your bot wins! +'+ Math.floor(state.currentFightBet*state.currentBetCoef), p.width / 2, p.height / 2)
+                  }
+                  if(state.currentChoosenWinner === "bot2")
+                  {
+                      p.text('You lost! -' + state.currentFightBet + "$", p.width / 2, p.height / 2)
+                  }
+                }
+                if (state.winner === 2){
+                  if(state.currentChoosenWinner === "bot2")
+                  {
+                      p.text('Your bot wins! +' + Math.floor(state.currentFightBet*state.currentBetCoef) + "$", p.width / 2, p.height / 2)
+                  }
+                  if(state.currentChoosenWinner === "bot1")
+                  {
+                      p.text('You lost! -' + state.currentFightBet + "$", p.width / 2, p.height / 2)
+                  }
+                }
+                
+              } else {
       if (state.winner === 1) p.text(player1.name + ' wins!', p.width / 2, p.height / 2)
       else p.text(player2.name + ' wins!', p.width / 2, p.height / 2)}
     showEndButtons();
@@ -62,7 +85,9 @@ export function movement(player, enemy){
         else {
           const speed = Math.hypot(player.velocity.x, player.velocity.y)
           if (speed < 5 && player.stunTimer === 0) {
-            randomJump(player, (cd) => (player.jumpCD = cd))
+           if ((state.currentMode === "bot" & player.index === 2) || state.currentMode === "botvsbot") {
+              randomJump(player, (cd) => (player.jumpCD = cd))
+            }
           }
         }
       }
@@ -89,6 +114,7 @@ export function handleBow(p, player, weapon) {
 }
 
 export function handleSurikens(p, player, weapon, enemy, enemyWeapon, enemyNum){
+      if(state.gameOver) return;
       if (player.name === 'Ninja' || player.name === 'Shielder') {
         if (p.frameCount % 30 === 0 && player.name === 'Ninja') {
           throwShuriken(player, weapon)
@@ -195,7 +221,8 @@ export function updateVikingSpeed(weapon) {
 // ===== Файтер и границы =====
 export function keepFightersInside(player1, player2) {
     ;[player1, player2].forEach((p) => {
-    if (p.name === 'Fighter') {
+    // if (p.name === 'Fighter') 
+    {
       const minX = 20,
         maxX = 580,
         minY = 20,
@@ -220,7 +247,7 @@ export function keepFightersInside(player1, player2) {
 }
 
 export function keepInsideArena(player, minX = 20, maxX = 580, minY = 20, maxY = 580) {
-    if(player.name != 'Fighter') return;
+    //if(player.name != 'Fighter') return;
     let x = player.position.x
     let y = player.position.y
     let vx = player.velocity.x

@@ -21,27 +21,27 @@
       <!-- Профиль игрока -->
       <div id="player-profile">
         <img id="player-avatar" src="" alt="avatar">
-        <p id="player-name">Nickname</p>
+        <p id="player-name">Никнейм</p>
         <p id="player-money">💰: </p>
       </div>
 
       <!-- Главное меню -->
       <div id="main-menu" class="menu-screen">
-        <h2 class="menu-title">Ball Fight</h2>
+        <h2 class="menu-title">Битва шаров</h2>
         <div class="menu-buttons">
-          <button id="vs-friend-btn" class="start-btn">VS Friend</button>
-          <button id="vs-bot-btn" class="start-btn">VS Bot</button>
-          <button id="debts-btn" class="start-btn">Debts</button>
+          <button id="vs-friend-btn" class="start-btn">Против друга</button>
+          <button id="vs-bot-btn" class="start-btn">Против бота</button>
+          <button id="debts-btn" class="start-btn">Ставки</button>
         </div>
       </div>
 
       <!-- Меню выбора персонажей (VS Friend) -->
       <div id="menu-screen" class="menu-screen" style="display: none;">
-        <button id="back-btn" class="back-btn">Back</button>
-        <h2 class="menu-title">Choose your fighter</h2>
+        <button id="back-btn" class="back-btn">Назад</button>
+        <h2 class="menu-title">Выберите своего бойца</h2>
         <div class="characters-wrapper">
           <div class="character-panel">
-            <h3>Player 1</h3>
+            <h3>Игрок 1</h3>
             <div id="char-buttons-p1" class="char-buttons"></div>
           </div>
           <div id="bot-bet-block" style="display:none; margin-left:2vw; flex:1;">
@@ -59,40 +59,53 @@
               <div id="bot-bet-error" style="color:red; display:none; margin-top:0.5vh;"></div>
           </div>
           <div class="character-panel" id="char-panel-p2">
-            <h3>Player 2</h3>
+            <h3>Игрок 2</h3>
             <div id="char-buttons-p2" class="char-buttons"></div>
           </div>
         </div>
-        <button id="start-btn" class="start-btn">Start Fight</button>
+        <button id="start-btn" class="start-btn">Начать бой</button>
       </div>
 
       <!-- Экран ставок (Debts) -->
       <div id="debts-screen" class="menu-screen" style="display: none;">
-        <button id="debts-back-btn" class="back-btn">Back</button>
-        <h2 class="menu-title">Place your bets</h2>
+        <button id="debts-back-btn" class="back-btn">Назад</button>
+        <h2 class="menu-title">Поставьте ставку</h2>
+
         <div id="bets-list">
-          <!-- Здесь динамически выводишь пары бойцов -->
-          <p>Player 1 vs Player 2</p>
+          <div class="bot-bet-row">
+            <div class="bot-left">
+              <p class="bot-name" id="bot1-name"></p>
+              <p class="bot-coef" id="bot1-coef"></p>
+            </div>
+
+            <div class="bot-vs">VS</div>
+
+            <div class="bot-right">
+              <p class="bot-name" id="bot2-name"></p>
+              <p class="bot-coef" id="bot2-coef"></p>
+            </div>
+          </div>
         </div>
+
         <div class="bet-controls">
-          <label>
-            Choose winner:
-            <select id="bet-winner">
-              <option value="p1">Player 1</option>
-              <option value="p2">Player 2</option>
-            </select>
+          <div id="bet-choice">
+            <button id="bet-on-p1" class="bet-btn">Поставить на бота 1</button>
+            <button id="bet-on-p2" class="bet-btn">Поставить на бота 2</button>
+          </div>
+
+          <label id="botvsbotinput">
+            Ставка:
+            <input type="number" id="bet-amount" min="1" value="0">
           </label>
-          <label>
-            Amount:
-            <input type="number" id="bet-amount" min="1" value="10">
-          </label>
-          <button id="place-bet" class="start-btn">Place Bet</button>
+
+          <button id="place-bet">Поставить ставку</button>
         </div>
       </div>
 
+
       <!-- Сам канвас -->
       <div id="game-wrapper" style="display: none">
-        <h2 id="fight-title"><span id="fight-text">FIGHT!</span></h2>
+        <h2 id="fight-title"><span id="fight-text">Бой!</span></h2>
 
         <div class="canvas-container">
           <div class="canvas-wrapper">
@@ -111,7 +124,7 @@
           </div>
 
           <div id="end-buttons" style="display: none;">
-            <button id="menu-btn" class="end-btn">Menu</button>
+            <button id="menu-btn" class="end-btn">Меню</button>
             <!-- <button id="retry-btn" class="end-btn">Retry</button> -->
           </div>
         </div>

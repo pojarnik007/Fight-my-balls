@@ -6,6 +6,9 @@ export const state = {
   winner: '',
   currentMode: "",
   currentBotBet: 0,
+  currentFightBet: 0,
+  currentBetCoef: 0,
+  currentChoosenWinner: "",
 }
 
 export function resetState() {
@@ -16,5 +19,8 @@ export function resetState() {
   state.winner = ''
   state.currentMode = ""     
   state.currentBotBet = 0   
+  state.currentFightBet = 0
+  state.currentBetCoef = 0
+  state.currentChoosenWinner = ""
 }
 

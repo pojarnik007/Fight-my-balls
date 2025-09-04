@@ -296,13 +296,56 @@ export function draw(p, player1Stat, player2Stat) {
 
   drawEntities(p, player1, player2, weapon1, weapon2)
 
+  const keys = {
+  w: false,
+  a: false,
+  s: false,
+  d: false,
+  ArrowUp: false,
+  ArrowDown: false,
+  ArrowLeft: false,
+  ArrowRight: false,
+};
 
-  if (state.hp1 === 0)
+document.addEventListener('keydown', (e) => {
+  if (keys[e.key] === undefined) return;
+
+  if (!keys[e.key]) {
+    // Импульсный толчок
+    if (e.key === 'w') applyImpulse(player1, 0, -1);
+    if (e.key === 'a') applyImpulse(player1, -1, 0);
+    if (e.key === 's') applyImpulse(player1, 0, 1);
+    if (e.key === 'd') applyImpulse(player1, 1, 0);
+
+    if (state.currentMode !== 'bot') {
+      if (e.key === 'ArrowUp') applyImpulse(player2, 0, -1);
+      if (e.key === 'ArrowLeft') applyImpulse(player2, -1, 0);
+      if (e.key === 'ArrowDown') applyImpulse(player2, 0, 1);
+      if (e.key === 'ArrowRight') applyImpulse(player2, 1, 0);
+    }
+  }
+
+  keys[e.key] = true;
+});
+
+document.addEventListener('keyup', (e) => {
+  if (keys[e.key] !== undefined) keys[e.key] = false;
+});
+
+function applyImpulse(player, dx, dy) {
+  if (!player) return;
+  if( state.currentMode === "botvsbot") return;
+  const force = 0.1; // настрой силу импульса
+  Body.applyForce(player, player.position, { x: dx * force, y: dy * force });
+}
+
+
+  if (state.hp1 <= 0)
   {
     state.winner = 2
     state.gameOver = true
   }
-  if (state.hp2 === 0)
+  if (state.hp2 <= 0)
   {
     state.winner = 1
     state.gameOver = true
@@ -334,8 +377,8 @@ export function initPlayers(p) {
     p.invul = 0
   })
 
-  state.hp1 = 1
-  state.hp2 = 1
+  state.hp1 = 100
+  state.hp2 = 100
   coef1 = 1
   coef2 = 1
   state.winner = 0

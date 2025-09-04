@@ -21,3 +21,4 @@ export function limitVelocity(body, max = 10) {
     Body.setVelocity(body, { x: vx * scale, y: vy * scale })
   }
 }
+
